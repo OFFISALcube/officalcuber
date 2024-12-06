@@ -1,0 +1,1613 @@
+<html><head><base href="/">
+<title>Official Cube Website</title>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    background: #1a1a1a;
+    color: white;
+    font-family: Arial, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow: hidden;
+  }
+
+  nav {
+    width: 100%;
+    background: #1a237e; /* Changed from #333 to dark blue */
+    padding: 1rem;
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    z-index: 100; /* Changed from 1000 to 100 */
+  }
+
+  .btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+    color: white;
+    text-decoration: none;
+    transform-style: preserve-3d;
+    perspective: 1000px;
+  }
+
+  .home-btn { background: #4CAF50; }
+  .cube-btn { background: #2196F3; }
+  .danger-btn { background: #f44336; }
+  .error-btn { background: #9C27B0; }
+  .btn:hover { transform: scale(1.1); }
+
+  .btn.cubeified {
+    animation: buttonToCube 2s forwards;
+    transform-style: preserve-3d;
+  }
+
+  @keyframes buttonToCube {
+    0% {
+      transform: rotateX(0) rotateY(0);
+      border-radius: 5px;
+      height: auto;
+    }
+    100% {
+      transform: rotateX(360deg) rotateY(360deg);
+      border-radius: 0;
+      height: 50px;
+      width: 50px;
+    }
+  }
+
+  .btn-face {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: inherit;
+    opacity: 0;
+    transition: opacity 2s;
+  }
+
+  .btn.cubeified .btn-face {
+    opacity: 1;
+  }
+
+  .btn-face.front { transform: translateZ(25px); }
+  .btn-face.back { transform: rotateY(180deg) translateZ(25px); }
+  .btn-face.right { transform: rotateY(90deg) translateZ(25px); }
+  .btn-face.left { transform: rotateY(-90deg) translateZ(25px); }
+  .btn-face.top { transform: rotateX(90deg) translateZ(25px); }
+  .btn-face.bottom { transform: rotateX(-90deg) translateZ(25px); }
+
+  .cube-container {
+    margin-top: 50px;
+    perspective: 1000px;
+    display: none;
+    cursor: pointer;
+    z-index: 1; /* Changed from 1000 to 1 */
+  }
+
+  .cube {
+    width: 200px;
+    height: 200px;
+    position: relative;
+    transform-style: preserve-3d;
+    animation: rotate 10s infinite linear;
+    transition: transform 0.3s ease;
+  }
+
+  .cube.following { animation: none; }
+
+  .face {
+    position: absolute;
+    width: 200px;
+    height: 200px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+  }
+
+  .front { transform: translateZ(100px); }
+  .back { transform: rotateY(180deg) translateZ(100px); }
+  .right { transform: rotateY(90deg) translateZ(100px); }
+  .left { transform: rotateY(-90deg) translateZ(100px); }
+  .top { transform: rotateX(90deg) translateZ(100px); }
+  .bottom { transform: rotateX(-90deg) translateZ(100px); }
+
+  @keyframes rotate {
+    from { transform: rotateX(0) rotateY(0); }
+    to { transform: rotateX(360deg) rotateY(360deg); }
+  }
+
+  .welcome-message {
+    margin-top: 50px;
+    text-align: center;
+    z-index: 1; /* Changed from 1000 to 1 */
+  }
+
+  .army-cube {
+    width: 50px;
+    height: 50px;
+    position: absolute;
+    transform-style: preserve-3d;
+    pointer-events: none;
+    animation: rotateMini 2s infinite linear;
+  }
+
+  @keyframes rotateMini {
+    from { transform: rotateX(0) rotateY(0); }
+    to { transform: rotateX(360deg) rotateY(360deg); }
+  }
+
+  .army-face {
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid #fff;
+  }
+
+  .army-face.front { transform: translateZ(25px); }
+  .army-face.back { transform: rotateY(180deg) translateZ(25px); }
+  .army-face.right { transform: rotateY(90deg) translateZ(25px); }
+  .army-face.left { transform: rotateY(-90deg) translateZ(25px); }
+  .army-face.top { transform: rotateX(90deg) translateZ(25px); }
+  .army-face.bottom { transform: rotateX(-90deg) translateZ(25px); }
+
+  .error-popup {
+    position: fixed;
+    padding: 20px;
+    background: #f44336;
+    color: white;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    z-index: 9998; /* Kept at highest z-index */
+    animation: shake 0.5s linear;
+  }
+
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+    20%, 40%, 60%, 80% { transform: translateX(5px); }
+  }
+
+  /* Adding new dropdown menu styles */
+  .dropdown {
+    position: relative;
+    display: inline-block;
+  }
+
+  .cube-menu-btn {
+    background: #FF9800;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .dropdown-content {
+    display: none;
+    position: absolute;
+    background: #1a237e; /* Changed from #444 to dark blue */
+    min-width: 600px; /* Increased width to accommodate new buttons */
+    padding: 15px;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+    z-index: 9999; /* Keep this highest */
+    border-radius: 5px;
+    transform-origin: top;
+    animation: dropdownAppear 0.3s ease;
+    grid-template-columns: repeat(4, 1fr); /* Changed to 4 columns for better layout */
+    grid-gap: 5px;
+    right: 0;
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+
+  @keyframes dropdownAppear {
+    from {
+      opacity: 0;
+      transform: scaleY(0);
+    }
+    to {
+      opacity: 1;
+      transform: scaleY(1);
+    }
+  }
+
+  .dropdown-item {
+    padding: 6px 10px; /* Slightly smaller padding */
+    margin: 2px;
+    border-radius: 3px;
+    text-decoration: none;
+    display: block;
+    color: white;
+    transition: background 0.3s;
+    cursor: pointer;
+    font-size: 0.9rem; /* Slightly smaller font to fit more items */
+    white-space: nowrap;
+  }
+
+  .dropdown-item:hover {
+    background: #283593; /* Changed from #555 to slightly lighter dark blue */
+  }
+
+  .down-arrow {
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 5px solid white;
+    margin-left: 5px;
+  }
+
+  /* New styles for ripple effect */
+  @keyframes ripple {
+    0% { transform: scale(1); opacity: 1; }
+    100% { transform: scale(2); opacity: 0; }
+  }
+
+  /* New styles for twist effect */
+  @keyframes twist {
+    0% { transform: rotate3d(1, 1, 1, 0deg); }
+    100% { transform: rotate3d(1, 1, 1, 360deg); }
+  }
+
+  /* New styles for zigzag effect */
+  @keyframes zigzag {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(10px) translateY(-10px); }
+    50% { transform: translateX(-10px) translateY(10px); }
+  }
+
+  /* Additional styles for new effects */
+  .rainbow-text {
+    background: linear-gradient(45deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #8f00ff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: rainbow 5s linear infinite;
+  }
+
+  @keyframes rainbow {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 200% 50%; }
+  }
+
+  .glowing {
+    animation: glow 1s ease-in-out infinite alternate;
+  }
+
+  @keyframes glow {
+    from { text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 15px #0073e6, 0 0 20px #0073e6; }
+    to { text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #0073e6, 0 0 40px #0073e6; }
+  }
+
+  /* Add these new animations for the new effects */
+  @keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+  }
+
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-20px); }
+  }
+
+  .settings-menu-btn {
+    background: #757575; /* Grey color for the settings button */
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .settings-dropdown {
+    display: none;
+    position: absolute;
+    background: #424242; /* Dark grey for dropdown background */
+    min-width: 300px;
+    padding: 15px;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+    z-index: 9999;
+    border-radius: 5px;
+    transform-origin: top;
+    animation: dropdownAppear 0.3s ease;
+    grid-template-columns: repeat(2, 1fr);
+    grid-gap: 5px;
+    right: 0;
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+
+  .settings-dropdown .dropdown-item:hover {
+    background: #616161; /* Lighter grey for hover state */
+  }
+
+  .chaos-spin {
+    animation: chaosRotate 4s infinite linear;
+    transform-origin: center center;
+  }
+
+  @keyframes chaosRotate {
+    from {
+      transform: rotate(0deg) scale(1);
+    }
+    to {
+      transform: rotate(360deg) scale(1);
+    }
+  }
+</style>
+</head>
+<body>
+  <nav>
+    <button onclick="showHome()" class="btn home-btn">Homepage</button>
+    <button onclick="showCube()" class="btn cube-btn">Cube</button>
+    <button class="btn danger-btn" onclick="unleashCubeArmy()">Don't Click This</button>
+    <button class="btn error-btn" onclick="startErrorMadness()">Crazy Error</button>
+    <button onclick="startChaosSpinning()" class="btn cube-btn">Spin</button>
+    <div class="dropdown">
+      <button class="btn cube-menu-btn" onclick="toggleDropdown()">
+        Cube Menu
+        <div class="down-arrow"></div>
+      </button>
+      <div class="dropdown-content" id="cubeDropdown">
+        <div class="dropdown-item" onclick="changeCubeColor()">Random Cube Color</div>
+        <div class="dropdown-item" onclick="toggleCubeWireframe()">Toggle Wireframe</div>
+        <div class="dropdown-item" onclick="changeCubeSize()">Change Cube Size</div>
+        <div class="dropdown-item" onclick="toggleRotationDirection()">Change Rotation</div>
+        <div class="dropdown-item" onclick="toggleCubeTexture()">Toggle Texture</div>
+        <div class="dropdown-item" onclick="toggleRainbowText()">Rainbow Text</div>
+        <div class="dropdown-item" onclick="toggleGlowingEdges()">Glowing Edges</div>
+        <div class="dropdown-item" onclick="toggleFaceLabels()">Toggle Labels</div>
+        <div class="dropdown-item" onclick="toggleTransparency()">Toggle Transparency</div>
+        <div class="dropdown-item" onclick="speedUpRotation()">Speed Up Rotation</div>
+        <div class="dropdown-item" onclick="slowDownRotation()">Slow Down Rotation</div>
+        <div class="dropdown-item" onclick="togglePulseEffect()">Pulse Effect</div>
+        <div class="dropdown-item" onclick="toggleBorderStyle()">Cycle Border Style</div>
+        <div class="dropdown-item" onclick="toggleFaceColors()">Rainbow Faces</div>
+        <div class="dropdown-item" onclick="toggleShadows()">Toggle Shadows</div>
+        <div class="dropdown-item" onclick="toggleBounceEffect()">Bounce Effect</div>
+        <div class="dropdown-item" onclick="toggleSpinAxis()">Change Spin Axis</div>
+        <div class="dropdown-item" onclick="toggleBlurEffect()">Blur Effect</div>
+        <div class="dropdown-item" onclick="toggleRippleEffect()">Ripple Effect</div>
+        <div class="dropdown-item" onclick="toggleMetallicEffect()">Metallic Finish</div>
+        <div class="dropdown-item" onclick="toggleHologramEffect()">Hologram Effect</div>
+        <div class="dropdown-item" onclick="toggleVortexSpin()">Vortex Spin</div>
+        <div class="dropdown-item" onclick="togglePixelation()">Pixelation</div>
+        <div class="dropdown-item" onclick="toggleLavaLamp()">Lava Lamp</div>
+        <div class="dropdown-item" onclick="toggleZigZag()">Zig-Zag Motion</div>
+        <div class="dropdown-item" onclick="toggleStaticNoise()">Static Noise</div>
+        <div class="dropdown-item" onclick="toggleWavePattern()">Wave Pattern</div>
+        <div class="dropdown-item" onclick="toggleCrystalEffect()">Crystal Effect</div>
+        <div class="dropdown-item" onclick="toggleMirrorMode()">Mirror Mode</div>
+        <div class="dropdown-item" onclick="toggleGlitchEffect()">Glitch Effect</div>
+      </div>
+    </div>
+    <div class="dropdown">
+      <button class="btn settings-menu-btn" onclick="toggleSettingsDropdown()">
+        Settings
+        <div class="down-arrow"></div>
+      </button>
+      <div class="dropdown-content settings-dropdown" id="settingsDropdown">
+        <div class="dropdown-item" onclick="toggleDarkMode()">Toggle Dark Mode</div>
+        <div class="dropdown-item" onclick="toggleFullscreen()">Toggle Fullscreen</div>
+        <div class="dropdown-item" onclick="resetAllEffects()">Reset All Effects</div>
+        <div class="dropdown-item" onclick="toggleAnimations()">Toggle Animations</div>
+        <div class="dropdown-item" onclick="changeBackground()">Change Background</div>
+        <div class="dropdown-item" onclick="togglePerformanceMode()">Performance Mode</div>
+        <div class="dropdown-item" onclick="toggleSoundEffects()">Sound Effects</div>
+        <div class="dropdown-item" onclick="adjustSpeed()">Adjust Speed</div>
+        <div class="dropdown-item" onclick="toggleDebugMode()">Debug Mode</div>
+        <div class="dropdown-item" onclick="toggleAutoRotate()">Auto Rotation</div>
+        <div class="dropdown-item" onclick="toggleMouseControl()">Mouse Control</div>
+        <div class="dropdown-item" onclick="toggleTouchControl()">Touch Control</div>
+        <div class="dropdown-item" onclick="toggleKeyboardShortcuts()">Keyboard Shortcuts</div>
+        <div class="dropdown-item" onclick="toggleVSync()">VSync</div>
+        <div class="dropdown-item" onclick="toggleAntialiasing()">Antialiasing</div>
+        <div class="dropdown-item" onclick="toggleQualityPreset()">Quality Preset</div>
+        <div class="dropdown-item" onclick="toggleColorScheme()">Color Scheme</div>
+        <div class="dropdown-item" onclick="toggleAccessibility()">Accessibility Mode</div>
+        <div class="dropdown-item" onclick="toggleNotifications()">Notifications</div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="welcome-message" id="home-content">
+    <h1>Welcome to Official Cube Website!</h1>
+    <p>Click the 'Cube' button to see something amazing!</p>
+  </div>
+
+  <div class="cube-container" id="cube-content">
+    <div class="cube" id="cube">
+      <div class="face front">Front</div>
+      <div class="face back">Back</div>
+      <div class="face right">Right</div>
+      <div class="face left">Left</div>
+      <div class="face top">Top</div>
+      <div class="face bottom">Bottom</div>
+    </div>
+  </div>
+
+  <script>
+    let debugInterval;
+    let fpsCounter;
+    let cpuCounter;
+    let ramCounter;
+    let isFollowing = false;
+
+    function showHome() {
+      document.getElementById('home-content').style.display = 'block';
+      document.getElementById('cube-content').style.display = 'none';
+    }
+
+    function showCube() {
+      document.getElementById('home-content').style.display = 'none';
+      document.getElementById('cube-content').style.display = 'block';
+    }
+
+    const cube = document.getElementById('cube');
+    
+    cube.addEventListener('click', () => {
+      isFollowing = !isFollowing;
+      cube.classList.toggle('following');
+    });
+
+    document.addEventListener('mousemove', (e) => {
+      if (!isFollowing) return;
+      
+      const rect = cube.getBoundingClientRect();
+      const cubeX = rect.left + rect.width / 2;
+      const cubeY = rect.top + rect.height / 2;
+      
+      const deltaX = e.clientX - cubeX;
+      const deltaY = e.clientY - cubeY;
+      
+      const angleY = (deltaX / window.innerWidth) * 180;
+      const angleX = -(deltaY / window.innerHeight) * 180;
+      
+      cube.style.transform = `rotateY(${angleY}deg) rotateX(${angleX}deg)`;
+    });
+
+    let cubeInterval;
+
+    function createArmyCube() {
+      const cube = document.createElement('div');
+      cube.className = 'army-cube';
+      
+      ['front', 'back', 'right', 'left', 'top', 'bottom'].forEach(side => {
+        const face = document.createElement('div');
+        face.className = `army-face ${side}`;
+        cube.appendChild(face);
+      });
+
+      cube.style.left = Math.random() * (window.innerWidth - 50) + 'px';
+      cube.style.top = Math.random() * (window.innerHeight - 50) + 'px';
+      
+      document.body.appendChild(cube);
+    }
+
+    function unleashCubeArmy() {
+      const textNodes = [];
+      function findTextNodes(element) {
+        for (let node of element.childNodes) {
+          if (node.nodeType === 3 && node.textContent.trim() !== '') {
+            textNodes.push(node);
+          } else if (node.nodeType === 1 && !node.classList.contains('btn')) {
+            findTextNodes(node);
+          }
+        }
+      }
+      
+      findTextNodes(document.body);
+      textNodes.forEach(node => {
+        node.textContent = 'you are cubed';
+      });
+
+      const buttons = document.querySelectorAll('.btn');
+      buttons.forEach((btn, index) => {
+        setTimeout(() => {
+          ['front', 'back', 'right', 'left', 'top', 'bottom'].forEach(side => {
+            const face = document.createElement('div');
+            face.className = `btn-face ${side}`;
+            btn.appendChild(face);
+          });
+          
+          btn.classList.add('cubeified');
+        }, index * 500);
+      });
+
+      createArmyCube();
+      
+      if (!cubeInterval) {
+        cubeInterval = setInterval(createArmyCube, 200);
+      }
+    }
+
+    let errorCount = 0;
+    const symbols = '!@#$%^&*()_+-=[]{}|;:,.<>?/~`′″‴‼⁇⁈⁉℧℥℡℀℁℆℄┌┐└┘╭╮╯╰';
+    let isGlitching = false;
+
+    function getRandomSymbols(length) {
+      let result = '';
+      for(let i = 0; i < length; i++) {
+        result += symbols[Math.floor(Math.random() * symbols.length)];
+      }
+      return result;
+    }
+
+    function startErrorMadness() {
+      const errorMessages = [
+        "CRITICAL ERROR: System32 not found",
+        "WARNING: CPU temperature exceeding limits",
+        "ERROR: Memory overflow detected",
+        "FATAL ERROR: Hard drive spontaneously combusted",
+        "WARNING: Universe.exe has stopped working",
+        "ERROR: Reality matrices misaligned",
+        "CRITICAL: Time-space continuum breach detected",
+        "WARNING: Quantum uncertainty principle violated",
+        "ERROR: Dark matter leak detected",
+        "FATAL ERROR: Code gained consciousness"
+      ];
+
+      let currentInterval = 1000;
+
+      function createErrorPopup() {
+        if (errorCount >= 30 && !isGlitching) return;
+        
+        const popup = document.createElement('div');
+        popup.className = 'error-popup';
+        
+        let message = errorMessages[Math.floor(Math.random() * errorMessages.length)];
+        
+        if (currentInterval < 400) {
+          isGlitching = true;
+          currentInterval = 10;
+          const glitchInterval = setInterval(() => {
+            popup.textContent = getRandomSymbols(message.length);
+          }, 10);
+        } else {
+          popup.textContent = message;
+          if (!isGlitching) {
+            setTimeout(() => {
+              popup.remove();
+              errorCount--;
+            }, 2000);
+          }
+        }
+        
+        popup.style.left = Math.random() * (window.innerWidth - 300) + 'px';
+        popup.style.top = Math.random() * (window.innerHeight - 100) + 'px';
+        document.body.appendChild(popup);
+        errorCount++;
+
+        if (!isGlitching) {
+          currentInterval *= 0.95;
+          currentInterval = Math.max(200, currentInterval);
+        }
+        
+        setTimeout(createErrorPopup, currentInterval);
+      }
+
+      createErrorPopup();
+    }
+
+    function startChaosSpinning() {
+      // Get all elements except the body
+      const elements = document.querySelectorAll('*:not(body):not(script):not(style)');
+      
+      elements.forEach((element, index) => {
+        // Remove any existing chaos-spin classes
+        if (element.classList.contains('chaos-spin')) {
+          element.classList.remove('chaos-spin');
+          element.style.animation = '';
+        } else {
+          // Add random delays and directions for each element
+          const delay = Math.random() * 2;
+          const duration = 2 + Math.random() * 4;
+          const direction = Math.random() > 0.5 ? 'normal' : 'reverse';
+          const scale = 0.8 + Math.random() * 0.4;
+          
+          element.classList.add('chaos-spin');
+          element.style.animation = `chaosRotate ${duration}s ${delay}s infinite ${direction} linear`;
+          element.style.transformOrigin = `${Math.random() * 100}% ${Math.random() * 100}%`;
+        }
+      });
+      
+      // Show notification
+      const popup = document.createElement('div');
+      popup.className = 'error-popup';
+      popup.style.background = '#4CAF50';
+      popup.textContent = elements[0].classList.contains('chaos-spin') ? 
+        'Chaos Spinning Activated!' : 'Chaos Spinning Deactivated!';
+      popup.style.left = '50%';
+      popup.style.top = '50%';
+      popup.style.transform = 'translate(-50%, -50%)';
+      document.body.appendChild(popup);
+      setTimeout(() => popup.remove(), 2000);
+    }
+
+    function toggleMosaicPattern() {
+      const faces = document.querySelectorAll('.face');
+      faces.forEach(face => {
+        if (!face.style.backgroundImage || face.style.backgroundImage === 'none') {
+          face.style.backgroundImage = 'repeating-conic-gradient(from 0deg, #444 0deg 90deg, #666 90deg 180deg)';
+          face.style.backgroundSize = '20px 20px';
+        } else {
+          face.style.backgroundImage = 'none';
+        }
+      });
+    }
+
+    function toggleGradientCycle() {
+      const faces = document.querySelectorAll('.face');
+      faces.forEach(face => {
+        if (!face.hasAttribute('data-gradient')) {
+          face.setAttribute('data-gradient', 'true');
+          face.style.animation = 'rotate 10s infinite linear';
+          face.style.backgroundImage = 'linear-gradient(45deg, #ff0000, #00ff00, #0000ff, #ff0000)';
+          face.style.backgroundSize = '400% 400%';
+        } else {
+          face.removeAttribute('data-gradient');
+          face.style.animation = '';
+          face.style.backgroundImage = '';
+        }
+      });
+    }
+
+    function toggleSplitFaces() {
+      const faces = document.querySelectorAll('.face');
+      faces.forEach(face => {
+        if (!face.style.backgroundImage || face.style.backgroundImage === 'none') {
+          face.style.backgroundImage = 'linear-gradient(45deg, #ff0000 50%, #0000ff 50%)';
+        } else {
+          face.style.backgroundImage = 'none';
+        }
+      });
+    }
+
+    function toggleDotMatrix() {
+      const faces = document.querySelectorAll('.face');
+      faces.forEach(face => {
+        if (!face.style.backgroundImage || face.style.backgroundImage === 'none') {
+          face.style.backgroundImage = 'radial-gradient(circle, #fff 1px, transparent 1px)';
+          face.style.backgroundSize = '10px 10px';
+        } else {
+          face.style.backgroundImage = 'none';
+        }
+      });
+    }
+
+    function toggleSparkleEffect() {
+      const faces = document.querySelectorAll('.face');
+      faces.forEach(face => {
+        if (!face.hasAttribute('data-sparkle')) {
+          face.setAttribute('data-sparkle', 'true');
+          face.style.animation = 'rotate 10s infinite linear';
+          face.style.backgroundImage = 'radial-gradient(white, rgba(255,255,255,.2) 2px, transparent 5px)';
+          face.style.backgroundSize = '15px 15px';
+        } else {
+          face.removeAttribute('data-sparkle');
+          face.style.animation = '';
+          face.style.backgroundImage = '';
+        }
+      });
+    }
+
+    function toggleRippleEffect() {
+      const faces = document.querySelectorAll('.face');
+      faces.forEach(face => {
+        if (!face.hasAttribute('data-ripple')) {
+          face.setAttribute('data-ripple', 'true');
+          face.style.animation = 'ripple 2s infinite';
+        } else {
+          face.removeAttribute('data-ripple');
+          face.style.animation = '';
+        }
+      });
+    }
+
+    function toggleMetallicEffect() {
+      const faces = document.querySelectorAll('.face');
+      faces.forEach(face => {
+        if (!face.hasAttribute('data-metallic')) {
+          face.setAttribute('data-metallic', 'true');
+          face.style.background = 'linear-gradient(45deg, #888, #eee, #888)';
+          face.style.filter = 'brightness(1.2) contrast(1.5)';
+        } else {
+          face.removeAttribute('data-metallic');
+          face.style.background = '';
+          face.style.filter = '';
+        }
+      });
+    }
+
+    function toggleHologramEffect() {
+      const faces = document.querySelectorAll('.face');
+      faces.forEach(face => {
+        if (!face.hasAttribute('data-hologram')) {
+          face.setAttribute('data-hologram', 'true');
+          face.style.background = 'linear-gradient(135deg, transparent 0%, rgba(255,255,255,0.2) 50%, transparent 100%)';
+          face.style.animation = 'rainbow 3s linear infinite';
+        } else {
+          face.removeAttribute('data-hologram');
+          face.style.background = '';
+          face.style.animation = '';
+        }
+      });
+    }
+
+    function toggleVortexSpin() {
+      const cube = document.querySelector('.cube');
+      if (!cube.hasAttribute('data-vortex')) {
+        cube.setAttribute('data-vortex', 'true');
+        cube.style.animation = 'twist 4s infinite linear';
+      } else {
+        cube.removeAttribute('data-vortex');
+        cube.style.animation = 'rotate 10s infinite linear';
+      }
+    }
+
+    function togglePixelation() {
+      const faces = document.querySelectorAll('.face');
+      faces.forEach(face => {
+        if (!face.hasAttribute('data-pixelated')) {
+          face.setAttribute('data-pixelated', 'true');
+          face.style.imageRendering = 'pixelated';
+          face.style.background = 'repeating-conic-gradient(#fff 0% 25%, #000 25% 50%)';
+          face.style.backgroundSize = '8px 8px';
+        } else {
+          face.removeAttribute('data-pixelated');
+          face.style.imageRendering = '';
+          face.style.background = '';
+        }
+      });
+    }
+
+    function toggleLavaLamp() {
+      const faces = document.querySelectorAll('.face');
+      faces.forEach(face => {
+        if (!face.hasAttribute('data-lava')) {
+          face.setAttribute('data-lava', 'true');
+          face.style.background = 'radial-gradient(circle at 50% 50%, red, orange, yellow)';
+          face.style.animation = 'rainbow 5s ease infinite';
+        } else {
+          face.removeAttribute('data-lava');
+          face.style.background = '';
+          face.style.animation = '';
+        }
+      });
+    }
+
+    function toggleZigZag() {
+      const cube = document.querySelector('.cube');
+      if (!cube.hasAttribute('data-zigzag')) {
+        cube.setAttribute('data-zigzag', 'true');
+        cube.style.animation = 'zigzag 2s infinite ease-in-out';
+      } else {
+        cube.removeAttribute('data-zigzag');
+        cube.style.animation = 'rotate 10s infinite linear';
+      }
+    }
+
+    function toggleStaticNoise() {
+      const faces = document.querySelectorAll('.face');
+      faces.forEach(face => {
+        if (!face.hasAttribute('data-static')) {
+          face.setAttribute('data-static', 'true');
+          face.style.background = 'url("data:image/svg+xml,%3Csvg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="noise"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="1"%3E%3C/feTurbulence%3E%3C/filter%3E%3Crect width="100" height="100" filter="url(%23noise)"%3E%3C/rect%3E%3C/svg%3E")';
+        } else {
+          face.removeAttribute('data-static');
+          face.style.background = '';
+        }
+      });
+    }
+
+    function toggleWavePattern() {
+      const faces = document.querySelectorAll('.face');
+      faces.forEach(face => {
+        if (!face.hasAttribute('data-wave')) {
+          face.setAttribute('data-wave', 'true');
+          face.style.background = 'repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,0.2) 10px, rgba(255,255,255,0.2) 20px)';
+        } else {
+          face.removeAttribute('data-wave');
+          face.style.background = '';
+        }
+      });
+    }
+
+    function toggleCrystalEffect() {
+      const faces = document.querySelectorAll('.face');
+      faces.forEach(face => {
+        if (!face.hasAttribute('data-crystal')) {
+          face.setAttribute('data-crystal', 'true');
+          face.style.background = 'linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 50%, rgba(255,255,255,0.4) 100%)';
+          face.style.backdropFilter = 'blur(5px)';
+        } else {
+          face.removeAttribute('data-crystal');
+          face.style.background = '';
+          face.style.backdropFilter = '';
+        }
+      });
+    }
+
+    function toggleMirrorMode() {
+      const cube = document.querySelector('.cube');
+      if (!cube.hasAttribute('data-mirror')) {
+        cube.setAttribute('data-mirror', 'true');
+        cube.style.transform = 'scale(-1, 1)';
+      } else {
+        cube.removeAttribute('data-mirror');
+        cube.style.transform = '';
+      }
+    }
+
+    function toggleGlitchEffect() {
+      const faces = document.querySelectorAll('.face');
+      faces.forEach(face => {
+        if (!face.hasAttribute('data-glitch')) {
+          face.setAttribute('data-glitch', 'true');
+          face.style.animation = 'shake 0.5s infinite';
+          face.style.filter = 'hue-rotate(90deg) saturate(150%) brightness(1.2)';
+        } else {
+          face.removeAttribute('data-glitch');
+          face.style.animation = '';
+          face.style.filter = '';
+        }
+      });
+    }
+
+    function toggleDebugMode() {
+      const cube = document.querySelector('.cube');
+      
+      if (!cube.hasAttribute('data-debug')) {
+        // Enable debug mode
+        cube.setAttribute('data-debug', 'true');
+        cube.style.outline = '1px solid red';
+        
+        // Add outline to faces
+        const faces = document.querySelectorAll('.face');
+        faces.forEach(face => {
+          face.style.outline = '1px solid yellow';
+          face.setAttribute('title', `${face.className} - ${getComputedStyle(face).transform}`);
+        });
+        
+        // Create performance overlay
+        const debugOverlay = document.createElement('div');
+        debugOverlay.id = 'debugOverlay';
+        debugOverlay.style.cssText = `
+          position: fixed;
+          top: 10px;
+          left: 10px;
+          background: rgba(0, 0, 0, 0.8);
+          padding: 10px;
+          border-radius: 5px;
+          font-family: monospace;
+          color: #00ff00;
+          z-index: 9999;
+        `;
+        
+        fpsCounter = document.createElement('div');
+        cpuCounter = document.createElement('div');
+        ramCounter = document.createElement('div');
+        const wifiSpeed = document.createElement('div');
+        const bufferHealth = document.createElement('div');
+        const osInfo = document.createElement('div');
+        const hardwareInfo = document.createElement('div');
+        
+        debugOverlay.appendChild(fpsCounter);
+        debugOverlay.appendChild(cpuCounter);
+        debugOverlay.appendChild(ramCounter);
+        debugOverlay.appendChild(wifiSpeed);
+        debugOverlay.appendChild(bufferHealth);
+        debugOverlay.appendChild(osInfo);
+        debugOverlay.appendChild(hardwareInfo);
+        
+        document.body.appendChild(debugOverlay);
+        
+        // Start performance monitoring
+        let lastTime = performance.now();
+        let frames = 0;
+        
+        // Get OS and Hardware info
+        const os = navigator.platform || 'Unknown OS';
+        const hardware = navigator.hardwareConcurrency ? 
+          `CPU Cores: ${navigator.hardwareConcurrency}` : 'Hardware info unavailable';
+        
+        osInfo.textContent = `OS: ${os}`;
+        hardwareInfo.textContent = `Hardware: ${hardware}`;
+        
+        debugInterval = setInterval(() => {
+          // Calculate FPS
+          const currentTime = performance.now();
+          frames++;
+          if (currentTime >= lastTime + 1000) {
+            fpsCounter.textContent = `FPS: ${frames}`;
+            frames = 0;
+            lastTime = currentTime;
+          }
+          
+          // Get CPU load (estimation based on frame time)
+          const frameTime = performance.now() - currentTime;
+          const cpuLoad = Math.min(100, (frameTime / 16.67) * 100);
+          cpuCounter.textContent = `CPU Load: ${cpuLoad.toFixed(1)}%`;
+          
+          // Get memory usage
+          if (performance.memory) {
+            const usedHeap = performance.memory.usedJSHeapSize;
+            const totalHeap = performance.memory.totalJSHeapSize;
+            const usedMB = (usedHeap / 1048576).toFixed(2);
+            const totalMB = (totalHeap / 1048576).toFixed(2);
+            ramCounter.textContent = `RAM: ${usedMB}MB / ${totalMB}MB`;
+          } else {
+            ramCounter.textContent = 'RAM: Not available';
+          }
+          
+          // Get connection speed
+          if (navigator.connection) {
+            const speed = navigator.connection.downlink;
+            wifiSpeed.textContent = `Network: ${speed} Mbps`;
+          } else {
+            wifiSpeed.textContent = 'Network: Not available';
+          }
+          
+          // Simulate buffer health (example implementation)
+          const bufferPercent = Math.random() * 100;
+          bufferHealth.textContent = `Buffer Health: ${bufferPercent.toFixed(1)}%`;
+          
+        }, 1000 / 60); // Update 60 times per second
+        
+      } else {
+        // Disable debug mode
+        cube.removeAttribute('data-debug');
+        cube.style.outline = '';
+        
+        const faces = document.querySelectorAll('.face');
+        faces.forEach(face => {
+          face.style.outline = '';
+          face.removeAttribute('title');
+        });
+        
+        // Remove performance overlay
+        const debugOverlay = document.getElementById('debugOverlay');
+        if (debugOverlay) {
+          debugOverlay.remove();
+        }
+        
+        // Clear monitoring interval
+        if (debugInterval) {
+          clearInterval(debugInterval);
+          debugInterval = null;
+        }
+      }
+    }
+
+    function toggleDarkMode() {
+      const body = document.body;
+      if (body.style.background === 'rgb(26, 26, 26)') {
+        body.style.background = '#ffffff';
+        body.style.color = '#000000';
+      } else {
+        body.style.background = '#1a1a1a';
+        body.style.color = '#ffffff';
+      }
+    }
+
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen();
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+    }
+
+    function resetAllEffects() {
+      const cube = document.querySelector('.cube');
+      const faces = document.querySelectorAll('.face');
+      
+      cube.style = '';
+      cube.className = 'cube';
+      cube.style.animation = 'rotate 10s infinite linear';
+      
+      faces.forEach(face => {
+        face.style = '';
+        face.className = 'face ' + face.classList[1];
+      });
+    }
+
+    function toggleAnimations() {
+      const cube = document.querySelector('.cube');
+      if (cube.style.animationPlayState === 'paused') {
+        cube.style.animationPlayState = 'running';
+      } else {
+        cube.style.animationPlayState = 'paused';
+      }
+    }
+
+    function changeBackground() {
+      const colors = ['#1a1a1a', '#2c3e50', '#34495e', '#2c3e50', '#2980b9'];
+      const currentColor = document.body.style.background;
+      const currentIndex = colors.indexOf(currentColor);
+      const nextIndex = (currentIndex + 1) % colors.length;
+      document.body.style.background = colors[nextIndex];
+    }
+
+    function togglePerformanceMode() {
+      const cube = document.querySelector('.cube');
+      if (cube.style.willChange === 'transform') {
+        cube.style.willChange = 'auto';
+      } else {
+        cube.style.willChange = 'transform';
+      }
+    }
+
+    function toggleSoundEffects() {
+      // Placeholder for sound effects toggle
+      const popup = document.createElement('div');
+      popup.className = 'error-popup';
+      popup.textContent = 'Sound effects are currently not implemented';
+      popup.style.left = '50%';
+      popup.style.top = '50%';
+      popup.style.transform = 'translate(-50%, -50%)';
+      document.body.appendChild(popup);
+      setTimeout(() => popup.remove(), 2000);
+    }
+
+    function adjustSpeed() {
+      const cube = document.querySelector('.cube');
+      const currentDuration = parseFloat(getComputedStyle(cube).animationDuration);
+      const speeds = [1, 2, 5, 10, 15, 20];
+      const currentIndex = speeds.indexOf(currentDuration);
+      const nextIndex = (currentIndex + 1) % speeds.length;
+      cube.style.animationDuration = speeds[nextIndex] + 's';
+    }
+
+    function saveSettings() {
+      const settings = {
+        darkMode: document.body.style.background === '#1a1a1a',
+        animationSpeed: document.querySelector('.cube').style.animationDuration,
+        performanceMode: document.querySelector('.cube').style.willChange === 'transform',
+        debug: document.querySelector('.cube').hasAttribute('data-debug')
+      };
+      
+      localStorage.setItem('cubeSettings', JSON.stringify(settings));
+      
+      const popup = document.createElement('div');
+      popup.className = 'error-popup';
+      popup.style.background = '#4CAF50';
+      popup.textContent = 'Settings saved successfully!';
+      popup.style.left = '50%';
+      popup.style.top = '50%';
+      popup.style.transform = 'translate(-50%, -50%)';
+      document.body.appendChild(popup);
+      setTimeout(() => popup.remove(), 2000);
+    }
+
+    showHome();
+
+    document.body.addEventListener('wheel', (e) => {
+      e.preventDefault();
+    }, { passive: false });
+
+    document.body.addEventListener('touchmove', (e) => {
+      e.preventDefault();
+    }, { passive: false });
+
+    function toggleDropdown() {
+      const dropdown = document.getElementById('cubeDropdown');
+      dropdown.style.display = dropdown.style.display === 'grid' ? 'none' : 'grid';
+    }
+
+    function toggleSettingsDropdown() {
+      const dropdown = document.getElementById('settingsDropdown');
+      dropdown.style.display = dropdown.style.display === 'grid' ? 'none' : 'grid';
+    }
+
+    window.onclick = function(event) {
+      if (!event.target.matches('.cube-menu-btn') && !event.target.matches('.settings-menu-btn')) {
+        const cubeDropdown = document.getElementById('cubeDropdown');
+        const settingsDropdown = document.getElementById('settingsDropdown');
+        if (cubeDropdown.style.display === 'grid') {
+          cubeDropdown.style.display = 'none';
+        }
+        if (settingsDropdown.style.display === 'grid') {
+          settingsDropdown.style.display = 'none';
+        }
+      }
+    }
+
+    function changeCubeColor() {
+      const faces = document.querySelectorAll('.face');
+      const randomColor = `#${Math.floor(Math.random()*16777215).toString(16)}`;
+      faces.forEach(face => {
+        face.style.backgroundColor = randomColor;
+        face.style.borderColor = randomColor;
+      });
+    }
+
+    function toggleCubeWireframe() {
+      const faces = document.querySelectorAll('.face');
+      faces.forEach(face => {
+        face.style.background = face.style.background === 'none' ? 
+          'rgba(255, 255, 255, 0.1)' : 'none';
+      });
+    }
+
+    function changeCubeSize() {
+      const cube = document.querySelector('.cube');
+      const currentSize = parseInt(getComputedStyle(cube).width);
+      const newSize = currentSize === 200 ? 300 : 200;
+      
+      cube.style.width = `${newSize}px`;
+      cube.style.height = `${newSize}px`;
+      
+      const faces = document.querySelectorAll('.face');
+      faces.forEach(face => {
+        face.style.width = `${newSize}px`;
+        face.style.height = `${newSize}px`;
+        
+        if (face.classList.contains('front') || face.classList.contains('back')) {
+          face.style.transform = `translateZ(${newSize/2}px)`;
+        } else if (face.classList.contains('right') || face.classList.contains('left')) {
+          face.style.transform = `rotateY(${face.classList.contains('right') ? '90' : '-90'}deg) translateZ(${newSize/2}px)`;
+        } else {
+          face.style.transform = `rotateX(${face.classList.contains('top') ? '90' : '-90'}deg) translateZ(${newSize/2}px)`;
+        }
+      });
+    }
+
+    let rotationDirection = 1;
+    function toggleRotationDirection() {
+      rotationDirection *= -1;
+      const cube = document.querySelector('.cube');
+      cube.style.animation = 'none';
+      cube.offsetHeight;
+      cube.style.animation = `rotate 10s infinite linear ${rotationDirection === -1 ? 'reverse' : ''}`;
+    }
+
+    function toggleCubeTexture() {
+      const faces = document.querySelectorAll('.face');
+      faces.forEach(face => {
+        if (!face.style.backgroundImage) {
+          face.style.backgroundImage = 'linear-gradient(45deg, #333 25%, transparent 25%), linear-gradient(-45deg, #333 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #333 75%), linear-gradient(-45deg, transparent 75%, #333 75%)';
+          face.style.backgroundSize = '20px 20px';
+          face.style.backgroundPosition = '0 0, 0 10px, 10px -10px, -10px 0px';
+        } else {
+          face.style.backgroundImage = '';
+          face.style.backgroundSize = '';
+          face.style.backgroundPosition = '';
+        }
+      });
+    }
+
+    function toggleRainbowText() {
+      const faces = document.querySelectorAll('.face');
+      faces.forEach(face => {
+        face.classList.toggle('rainbow-text');
+      });
+    }
+
+    function toggleGlowingEdges() {
+      const faces = document.querySelectorAll('.face');
+      faces.forEach(face => {
+        face.classList.toggle('glowing');
+      });
+    }
+
+    function toggleFaceLabels() {
+      const faces = document.querySelectorAll('.face');
+      faces.forEach(face => {
+        if (face.style.fontSize === '0px') {
+          face.style.fontSize = '24px';
+        } else {
+          face.style.fontSize = '0px';
+        }
+      });
+    }
+
+    function toggleTransparency() {
+      const faces = document.querySelectorAll('.face');
+      faces.forEach(face => {
+        const currentOpacity = window.getComputedStyle(face).opacity;
+        face.style.opacity = currentOpacity == 1 ? '0.5' : '1';
+      });
+    }
+
+    function speedUpRotation() {
+      const cube = document.querySelector('.cube');
+      const currentDuration = parseFloat(getComputedStyle(cube).animationDuration);
+      const newDuration = Math.max(currentDuration * 0.75, 1);
+      cube.style.animationDuration = newDuration + 's';
+    }
+
+    function slowDownRotation() {
+      const cube = document.querySelector('.cube');
+      const currentDuration = parseFloat(getComputedStyle(cube).animationDuration);
+      const newDuration = currentDuration * 1.5;
+      cube.style.animationDuration = newDuration + 's';
+    }
+
+    function togglePulseEffect() {
+      const cube = document.querySelector('.cube');
+      if (!cube.style.animation.includes('pulse')) {
+        cube.style.animation = `rotate 10s infinite linear, pulse 2s infinite`;
+      } else {
+        cube.style.animation = `rotate 10s infinite linear`;
+      }
+    }
+
+    function toggleBorderStyle() {
+      const faces = document.querySelectorAll('.face');
+      const styles = ['solid', 'dashed', 'dotted', 'double', 'groove'];
+      const currentStyle = faces[0].style.borderStyle || 'solid';
+      const nextIndex = (styles.indexOf(currentStyle) + 1) % styles.length;
+      faces.forEach(face => face.style.borderStyle = styles[nextIndex]);
+    }
+
+    function toggleFaceColors() {
+      const faces = document.querySelectorAll('.face');
+      faces.forEach((face, index) => {
+        const hue = (index * 60) % 360;
+        face.style.backgroundColor = `hsla(${hue}, 70%, 50%, 0.5)`;
+      });
+    }
+
+    function toggleShadows() {
+      const cube = document.querySelector('.cube');
+      if (cube.style.filter === '') {
+        cube.style.filter = 'drop-shadow(0 0 20px rgba(255,255,255,0.5))';
+      } else {
+        cube.style.filter = '';
+      }
+    }
+
+    function toggleBounceEffect() {
+      const cube = document.querySelector('.cube');
+      if (!cube.style.animation.includes('bounce')) {
+        cube.style.animation = `rotate 10s infinite linear, bounce 1s infinite`;
+      } else {
+        cube.style.animation = `rotate 10s infinite linear`;
+      }
+    }
+
+    function toggleSpinAxis() {
+      const cube = document.querySelector('.cube');
+      const axes = ['rotateX(360deg)', 'rotateY(360deg)', 'rotateZ(360deg)'];
+      const currentTransform = cube.style.transform || axes[0];
+      const nextIndex = (axes.indexOf(currentTransform) + 1) % axes.length;
+      cube.style.transform = axes[nextIndex];
+    }
+
+    function toggleBlurEffect() {
+      const faces = document.querySelectorAll('.face');
+      faces.forEach(face => {
+        if (face.style.backdropFilter === '') {
+          face.style.backdropFilter = 'blur(5px)';
+        } else {
+          face.style.backdropFilter = '';
+        }
+      });
+    }
+
+    function toggleAutoRotate() {
+      const cube = document.querySelector('.cube');
+      const isRotating = cube.style.animationPlayState !== 'paused';
+      cube.style.animationPlayState = isRotating ? 'paused' : 'running';
+      
+      const popup = document.createElement('div');
+      popup.className = 'error-popup';
+      popup.style.background = '#4CAF50';
+      popup.textContent = `Auto Rotation ${isRotating ? 'disabled' : 'enabled'}!`;
+      popup.style.left = '50%';
+      popup.style.top = '50%';
+      popup.style.transform = 'translate(-50%, -50%)';
+      document.body.appendChild(popup);
+      setTimeout(() => popup.remove(), 2000);
+    }
+
+    function toggleMouseControl() {
+      isFollowing = !isFollowing;
+      const cube = document.querySelector('.cube');
+      cube.classList.toggle('following');
+      
+      const popup = document.createElement('div');
+      popup.className = 'error-popup';
+      popup.style.background = '#4CAF50';
+      popup.textContent = `Mouse Control ${isFollowing ? 'enabled' : 'disabled'}!`;
+      popup.style.left = '50%';
+      popup.style.top = '50%';
+      popup.style.transform = 'translate(-50%, -50%)';
+      document.body.appendChild(popup);
+      setTimeout(() => popup.remove(), 2000);
+    }
+
+    function toggleTouchControl() {
+      const cube = document.querySelector('.cube');
+      const touchEnabled = cube.hasAttribute('data-touch');
+      
+      if (!touchEnabled) {
+        cube.setAttribute('data-touch', 'true');
+        cube.addEventListener('touchmove', handleTouchMove);
+      } else {
+        cube.removeAttribute('data-touch');
+        cube.removeEventListener('touchmove', handleTouchMove);
+      }
+      
+      const popup = document.createElement('div');
+      popup.className = 'error-popup';
+      popup.style.background = '#4CAF50';
+      popup.textContent = `Touch Control ${!touchEnabled ? 'enabled' : 'disabled'}!`;
+      popup.style.left = '50%';
+      popup.style.top = '50%';
+      popup.style.transform = 'translate(-50%, -50%)';
+      document.body.appendChild(popup);
+      setTimeout(() => popup.remove(), 2000);
+    }
+
+    function handleTouchMove(e) {
+      if (e.touches.length === 1) {
+        e.preventDefault();
+        const touch = e.touches[0];
+        const cube = document.querySelector('.cube');
+        const rect = cube.getBoundingClientRect();
+        const cubeX = rect.left + rect.width / 2;
+        const cubeY = rect.top + rect.height / 2;
+        const deltaX = touch.clientX - cubeX;
+        const deltaY = touch.clientY - cubeY;
+        cube.style.transform = `rotateY(${deltaX / 5}deg) rotateX(${-deltaY / 5}deg)`;
+      }
+    }
+
+    function toggleKeyboardShortcuts() {
+      const enabled = !document.body.hasAttribute('data-shortcuts');
+      if (enabled) {
+        document.body.setAttribute('data-shortcuts', 'true');
+        document.addEventListener('keydown', handleKeyboardShortcuts);
+      } else {
+        document.body.removeAttribute('data-shortcuts');
+        document.removeEventListener('keydown', handleKeyboardShortcuts);
+      }
+      
+      const popup = document.createElement('div');
+      popup.className = 'error-popup';
+      popup.style.background = '#4CAF50';
+      popup.textContent = `Keyboard Shortcuts ${enabled ? 'enabled' : 'disabled'}!`;
+      popup.style.left = '50%';
+      popup.style.top = '50%';
+      popup.style.transform = 'translate(-50%, -50%)';
+      document.body.appendChild(popup);
+      setTimeout(() => popup.remove(), 2000);
+    }
+
+    function handleKeyboardShortcuts(e) {
+      switch(e.key) {
+        case 'ArrowLeft':
+          toggleRotationDirection();
+          break;
+        case 'ArrowUp':
+          speedUpRotation();
+          break;
+        case 'ArrowDown':
+          slowDownRotation();
+          break;
+        case 'Space':
+          toggleAnimations();
+          break;
+      }
+    }
+
+    function toggleVSync() {
+      const cube = document.querySelector('.cube');
+      const vsyncEnabled = cube.style.animationTimingFunction === 'linear';
+      cube.style.animationTimingFunction = vsyncEnabled ? 'steps(60)' : 'linear';
+      
+      const popup = document.createElement('div');
+      popup.className = 'error-popup';
+      popup.style.background = '#4CAF50';
+      popup.textContent = `VSync ${!vsyncEnabled ? 'enabled' : 'disabled'}!`;
+      popup.style.left = '50%';
+      popup.style.top = '50%';
+      popup.style.transform = 'translate(-50%, -50%)';
+      document.body.appendChild(popup);
+      setTimeout(() => popup.remove(), 2000);
+    }
+
+    function toggleAntialiasing() {
+      const cube = document.querySelector('.cube');
+      const faces = document.querySelectorAll('.face');
+      const enabled = cube.style.imageRendering === 'pixelated';
+      
+      cube.style.imageRendering = enabled ? 'auto' : 'pixelated';
+      faces.forEach(face => {
+        face.style.imageRendering = enabled ? 'auto' : 'pixelated';
+      });
+      
+      const popup = document.createElement('div');
+      popup.className = 'error-popup';
+      popup.style.background = '#4CAF50';
+      popup.textContent = `Antialiasing ${!enabled ? 'enabled' : 'disabled'}!`;
+      popup.style.left = '50%';
+      popup.style.top = '50%';
+      popup.style.transform = 'translate(-50%, -50%)';
+      document.body.appendChild(popup);
+      setTimeout(() => popup.remove(), 2000);
+    }
+
+    const qualityPresets = ['Low', 'Medium', 'High', 'Ultra'];
+    let currentQualityIndex = 2; // Start at High
+
+    function toggleQualityPreset() {
+      currentQualityIndex = (currentQualityIndex + 1) % qualityPresets.length;
+      const quality = qualityPresets[currentQualityIndex];
+      
+      const cube = document.querySelector('.cube');
+      const faces = document.querySelectorAll('.face');
+      
+      switch(quality) {
+        case 'Low':
+          cube.style.imageRendering = 'pixelated';
+          faces.forEach(face => {
+            face.style.backdropFilter = 'none';
+            face.style.backgroundColor = 'rgba(255,255,255,0.1)';
+          });
+          break;
+        case 'Medium':
+          cube.style.imageRendering = 'auto';
+          faces.forEach(face => {
+            face.style.backdropFilter = 'blur(2px)';
+            face.style.backgroundColor = 'rgba(255,255,255,0.2)';
+          });
+          break;
+        case 'High':
+          cube.style.imageRendering = 'auto';
+          faces.forEach(face => {
+            face.style.backdropFilter = 'blur(5px)';
+            face.style.backgroundColor = 'rgba(255,255,255,0.3)';
+          });
+          break;
+        case 'Ultra':
+          cube.style.imageRendering = 'auto';
+          faces.forEach(face => {
+            face.style.backdropFilter = 'blur(10px)';
+            face.style.backgroundColor = 'rgba(255,255,255,0.4)';
+          });
+          break;
+      }
+      
+      const popup = document.createElement('div');
+      popup.className = 'error-popup';
+      popup.style.background = '#4CAF50';
+      popup.textContent = `Quality Preset: ${quality}`;
+      popup.style.left = '50%';
+      popup.style.top = '50%';
+      popup.style.transform = 'translate(-50%, -50%)';
+      document.body.appendChild(popup);
+      setTimeout(() => popup.remove(), 2000);
+    }
+
+    const colorSchemes = ['Default', 'Dark', 'Light', 'Neon'];
+    let currentSchemeIndex = 0;
+
+    function toggleColorScheme() {
+      currentSchemeIndex = (currentSchemeIndex + 1) % colorSchemes.length;
+      const scheme = colorSchemes[currentSchemeIndex];
+      
+      const body = document.body;
+      const cube = document.querySelector('.cube');
+      const faces = document.querySelectorAll('.face');
+      
+      switch(scheme) {
+        case 'Default':
+          body.style.background = '#1a1a1a';
+          faces.forEach(face => {
+            face.style.backgroundColor = 'rgba(255,255,255,0.1)';
+            face.style.borderColor = '#fff';
+          });
+          break;
+        case 'Dark':
+          body.style.background = '#000000';
+          faces.forEach(face => {
+            face.style.backgroundColor = 'rgba(50,50,50,0.1)';
+            face.style.borderColor = '#333';
+          });
+          break;
+        case 'Light':
+          body.style.background = '#ffffff';
+          faces.forEach(face => {
+            face.style.backgroundColor = 'rgba(0,0,0,0.1)';
+            face.style.borderColor = '#000';
+          });
+          break;
+        case 'Neon':
+          body.style.background = '#0a0a0a';
+          faces.forEach(face => {
+            face.style.backgroundColor = 'rgba(0,255,255,0.1)';
+            face.style.borderColor = '#0ff';
+            face.style.boxShadow = '0 0 10px #0ff';
+          });
+          break;
+      }
+      
+      const popup = document.createElement('div');
+      popup.className = 'error-popup';
+      popup.style.background = '#4CAF50';
+      popup.textContent = `Color Scheme: ${scheme}`;
+      popup.style.left = '50%';
+      popup.style.top = '50%';
+      popup.style.transform = 'translate(-50%, -50%)';
+      document.body.appendChild(popup);
+      setTimeout(() => popup.remove(), 2000);
+    }
+
+    function toggleAccessibility() {
+      const cube = document.querySelector('.cube');
+      const faces = document.querySelectorAll('.face');
+      const enabled = !cube.hasAttribute('data-accessibility');
+      
+      if (enabled) {
+        cube.setAttribute('data-accessibility', 'true');
+        faces.forEach(face => {
+          face.style.fontSize = '36px';
+          face.style.fontWeight = 'bold';
+          face.style.contrast = '200%';
+        });
+        cube.style.animationDuration = '15s';
+      } else {
+        cube.removeAttribute('data-accessibility');
+        faces.forEach(face => {
+          face.style.fontSize = '24px';
+          face.style.fontWeight = 'normal';
+          face.style.contrast = '100%';
+        });
+        cube.style.animationDuration = '10s';
+      }
+      
+      const popup = document.createElement('div');
+      popup.className = 'error-popup';
+      popup.style.background = '#4CAF50';
+      popup.textContent = `Accessibility Mode ${enabled ? 'enabled' : 'disabled'}!`;
+      popup.style.left = '50%';
+      popup.style.top = '50%';
+      popup.style.transform = 'translate(-50%, -50%)';
+      document.body.appendChild(popup);
+      setTimeout(() => popup.remove(), 2000);
+    }
+
+    function toggleNotifications() {
+      const enabled = !document.body.hasAttribute('data-notifications');
+      document.body.setAttribute('data-notifications', enabled);
+      
+      const popup = document.createElement('div');
+      popup.className = 'error-popup';
+      popup.style.background = '#4CAF50';
+      popup.textContent = `Notifications ${enabled ? 'enabled' : 'disabled'}!`;
+      popup.style.left = '50%';
+      popup.style.top = '50%';
+      popup.style.transform = 'translate(-50%, -50%)';
+      document.body.appendChild(popup);
+      setTimeout(() => popup.remove(), 2000);
+      
+      if (enabled) {
+        // Example notification
+        setTimeout(() => {
+          const notification = document.createElement('div');
+          notification.className = 'error-popup';
+          notification.style.background = '#2196F3';
+          notification.textContent = 'Welcome to Enhanced Cube Experience!';
+          notification.style.left = '50%';
+          notification.style.top = '50%';
+          notification.style.transform = 'translate(-50%, -50%)';
+          document.body.appendChild(notification);
+          setTimeout(() => notification.remove(), 2000);
+        }, 2500);
+      }
+    }
+  </script>
+</body>
+</html>
